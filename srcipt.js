@@ -1,122 +1,105 @@
 //http://api.weatherapi.com/v1/current.json?key=2aecac72f7bb4591b42163736250302&q=Colombo&aqi=no
 
 
-const temperatureField = document.querySelector(".temp");
-const locationField = document.querySelector(".time_location p");
-const dataField = document.querySelector(".time_location span");
-const weatherField = document.querySelector(".condition p");
-const searchField = document.querySelector(".search_area");
-//const searchButton = document.querySelector(".search_button");
-const form = document.querySelector(".search-form");
 
+document.addEventListener("DOMContentLoaded", () => {
+  // Selecting elements
+  const temperatureField = document.querySelector(".temp");
+  const locationField = document.querySelector(".time_location p");
+  const dateandTimeField = document.querySelector(".time_location span");
+  const conditionField = document.querySelector(".condition p");
+  const searchField = document.querySelector(".search_area");
+  const form = document.querySelector(".form");
 
+  // Ensure all elements exist
+  if (
+    !temperatureField ||
+    !locationField ||
+    !dateandTimeField ||
+    !conditionField ||
+    !searchField ||
+    !form
+  ) {
+    console.error("❌ One or more elements not found! Check your HTML.");
+    return;
+  }
 
-form.addEventListener("submit", searchForLocation);
+  // Adding event listener to the form
+  form.addEventListener("submit", searchForLocation);
 
-let target = 'Kandy'
+  let target = "Kandy";
 
-const fetchResults = async (targetLocation)=>{
-    let url = `http://api.weatherapi.com/v1/current.json?key=2aecac72f7bb4591b42163736250302&q=${targetLocation}&aqi=no`;
+  // Fetch weather data
+  const fetchResults = async (targetLocation) => {
+    let url = `http://api.weatherapi.com/v1/current.json?key=2aecac72f7bb4591b42163736250302&q=${targetLocation}&aqi=no`; //API url
 
-    /*try {
-        const res = await fetch(url);
-        if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        const data = await res.json();
-        console.log(data);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(data);
+
+      // Extracting weather details from API
+      let locationName = data.location.name; // getting location
+      let time = data.location.localtime; // getting date and time
+      let temp = data.current.temp_c; // getting temperature
+      let condition = data.current.condition.text; // getting condition
+
+      // Update UI
+      updateDetails(temp, locationName, time, condition);
+
     } catch (error) {
-        console.error('Error fetching data:', error);
-    }*/
-
-        
-    const res = await fetch(url)
-
-    const data = await res.json()
-
-    console.log(data)
-
-    //getting location name 
-    let locationName = data.location.name
-
-    let temp = data.current.temp_c //getting temperture
-
-    let condition = data.current.condition.text // getting condition
-
-};
-
-function searchForLocation(e){
-    e.preventDefault()
-
-    target = searchField.value //setting ther search value for the target value
-
-    fetchResults(target) 
-}
-
-fetchResults(target)
-
-
-//2----------
-/*document.addEventListener("DOMContentLoaded", () => {
-    const temperatureField = document.querySelector(".temp");
-    const locationField = document.querySelector(".time_location p");
-    const dataField = document.querySelector(".time_location span");
-    const weatherField = document.querySelector(".condition p");
-    const searchField = document.querySelector(".search_area");
-    const form = document.querySelector(".form");
-
-    if (!form) {
-        console.error("Form element not found!");
-        return;
+      console.error("Error fetching data:", error);
     }
+  };
 
-    form.addEventListener("submit", searchForLocation);
+  // Function to update UI with fetched data
+  function updateDetails(temp, locationName, time, condition) {
+    //splitting date and time for get the day
+    let splitDate = time.split(" ")[0]; 
 
-    let target = "Kandy";
+    let splitTime = time.split(" ")[1];
 
-    const fetchResults = async (targetLocation) => {
-        let url = `http://api.weatherapi.com/v1/current.json?key=2aecac72f7bb4591b42163736250302&q=${targetLocation}&aqi=no`;
+    let currentDay = getDayName(new Date(splitDate).getDay());
 
-        /*try {
-            const res = await fetch(url);
-            if (!res.ok) {
-                throw new Error(`HTTP error! Status: ${res.status}`);
-            }
-            const data = await res.json();
-            console.log(data);
+    temperatureField.innerText = `${temp}°C`;
+    locationField.innerText = locationName;
+    dateandTimeField.innerText = `${splitDate} ${currentDay} ${splitTime}`;
+    conditionField.innerText = condition;
+  }
 
-            // Updating the UI with fetched data
-            let locationName = data.location.name;
-            let temp = data.current.temp_c;
-            let condition = data.current.condition.text;
-
-            locationField.textContent = locationName;
-            temperatureField.textContent = `${temp}°C`;
-            weatherField.textContent = condition;
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }*/
-        /*    const res = await fetch(url)
-
-            const data = await res.json()
-        
-            console.log(data)
-        
-            //getting location name 
-            let locationName = data.location.name
-        
-            let temp = data.current.temp_c //getting temperture
-        
-            let condition = data.current.condition.text // getting condition
-    };
-
-    function searchForLocation(e) {
-        e.preventDefault();
-        target = searchField.value.trim();
-        if (target) {
-            fetchResults(target);
-        }
+  // Function to handle form submission
+  function searchForLocation(e) {
+    e.preventDefault();
+    target = searchField.value.trim();
+    if (target) {
+      fetchResults(target);
     }
+  }
 
-    fetchResults(target);
-});*/
+  // Initial fetch for default location
+  fetchResults(target);
+
+  // Funtion for assign the Day names to the number get by the getDay function (becuase it only gives the number 0 to 6 for the days)
+  function getDayName(number) {
+    switch (number) {
+      case 0:
+        return "Sunday";
+      case 1:
+        return "Monday";
+      case 2:
+        return "Tuesday";
+      case 3:
+        return "Wednesday";
+      case 4:
+        return "Thursday";
+      case 5:
+        return "Friday";
+      case 6:
+        return "Saturday";
+    }
+  }
+});
